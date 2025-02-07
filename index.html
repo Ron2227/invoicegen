@@ -5,49 +5,321 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice Generator - Young Web Solutions</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .company-info {
+            margin-bottom: 20px;
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #companyLogo {
+            max-width: 150px;
+            margin-bottom: 10px;
+        }
+
+        .signature-section {
+            margin-top: 30px;
+            text-align: right;
+        }
+
+        #signatureImage {
+            max-width: 120px;
+            height: auto;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        .invoice-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .services-table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+
+        .services-table th, .services-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .add-service-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+
+        .download-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .delete-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <img src="https://static.wixstatic.com/media/7bc1ab_7489dadc9d92495cb6129004e2a1e721~mv2.png/v1/fill/w_108,h_49,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Frame%201.png" 
-                 alt="Logo" class="logo">
-            <h1>Young Web Solutions</h1>
-            <select id="currency">
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-                <option value="GBP">GBP (£)</option>
-            </select>
+        <!-- Logo Upload -->
+        <div class="logo-section">
+            <input type="file" id="logoUpload" accept="image/*" onchange="handleLogoUpload()">
+            <img id="companyLogo" alt="Company Logo">
         </div>
 
-        <!-- Client Info -->
-        <div class="input-group">
-            <input type="text" id="clientName" placeholder="Client Name">
-            <input type="text" id="clientEmail" placeholder="Client Email">
+        <!-- Company Info -->
+        <div class="company-info">
+            <h2>Young Web Solutions</h2>
+            <p>Hemanth Bandlamudi, Founder</p>
+        </div>
+
+        <!-- Invoice Meta -->
+        <div class="invoice-meta">
+            <div>
+                <label>From:</label>
+                <textarea id="fromAddress" rows="4">Young Web Solutions\nHyderabad, India</textarea>
+            </div>
+            <div>
+                <label>To:</label>
+                <textarea id="toAddress" rows="4" placeholder="Client Information"></textarea>
+            </div>
+            <div>
+                <label>Invoice Number:</label>
+                <input type="text" id="invoiceNumber" value="INV-${Math.floor(1000 + Math.random() * 9000)}">
+            </div>
+            <div>
+                <label>Invoice Date:</label>
+                <input type="date" id="invoiceDate" value="${new Date().toISOString().split('T')[0]}">
+            </div>
         </div>
 
         <!-- Services Table -->
-        <div class="services">
-            <div class="service-header">
-                <span>Description</span>
-                <span>Qty</span>
-                <span>Price</span>
-                <span>Total</span>
-            </div>
-            <div id="servicesList"></div>
-            <button onclick="addService()">+ Add Service</button>
+        <table class="services-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="servicesBody">
+                <tr>
+                    <td><input type="text" class="service-desc"></td>
+                    <td><input type="number" class="quantity" value="1"></td>
+                    <td><input type="number" class="price"></td>
+                    <td class="total">0.00</td>
+                    <td><button class="delete-btn" onclick="deleteService(this)">×</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="add-service-btn" onclick="addService()">Add Service</button>
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <input type="file" id="signatureUpload" accept="image/*" onchange="handleSignatureUpload()">
+            <img id="signatureImage" alt="Signature">
+            <p>Hemanth Bandlamudi<br>Founder, Young Web Solutions</p>
         </div>
 
         <!-- Total & Download -->
-        <div class="total">
+        <div class="total-section">
             Grand Total: <span id="grandTotal">0.00</span>
         </div>
-        <button class="download-btn" onclick="generatePDF()">Download PDF</button>
+        <button class="download-btn" onclick="generatePDF()">Download Invoice</button>
     </div>
 
-    <!-- JS Files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="script.js"></script>
+    <script>
+        const { jsPDF } = window.jspdf;
+        
+        // Load saved logo and signature
+        window.onload = function() {
+            const savedLogo = localStorage.getItem('companyLogo');
+            if(savedLogo) document.getElementById('companyLogo').src = savedLogo;
+            
+            const savedSignature = localStorage.getItem('signature');
+            if(savedSignature) document.getElementById('signatureImage').src = savedSignature;
+        };
+
+        function handleLogoUpload() {
+            const file = document.getElementById('logoUpload').files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                localStorage.setItem('companyLogo', e.target.result);
+                document.getElementById('companyLogo').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleSignatureUpload() {
+            const file = document.getElementById('signatureUpload').files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                localStorage.setItem('signature', e.target.result);
+                document.getElementById('signatureImage').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function addService() {
+            const tbody = document.getElementById('servicesBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" class="service-desc"></td>
+                <td><input type="number" class="quantity" value="1"></td>
+                <td><input type="number" class="price"></td>
+                <td class="total">0.00</td>
+                <td><button class="delete-btn" onclick="deleteService(this)">×</button></td>
+            `;
+            tbody.appendChild(newRow);
+            addInputListeners(newRow);
+        }
+
+        function deleteService(btn) {
+            if(document.querySelectorAll('#servicesBody tr').length > 1) {
+                btn.closest('tr').remove();
+                calculateTotal();
+            }
+        }
+
+        function addInputListeners(row) {
+            row.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', calculateTotal);
+            });
+        }
+
+        function calculateTotal() {
+            let grandTotal = 0;
+            document.querySelectorAll('#servicesBody tr').forEach(row => {
+                const qty = parseFloat(row.querySelector('.quantity').value) || 0;
+                const price = parseFloat(row.querySelector('.price').value) || 0;
+                const total = qty * price;
+                row.querySelector('.total').textContent = total.toFixed(2);
+                grandTotal += total;
+            });
+            document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
+        }
+
+        function generatePDF() {
+            const doc = new jsPDF();
+            
+            // Add logo
+            const logo = localStorage.getItem('companyLogo');
+            if(logo) doc.addImage(logo, 'PNG', 10, 10, 40, 20);
+
+            // Company Info
+            doc.setFontSize(12);
+            doc.text("Young Web Solutions", 130, 15);
+            doc.text("Hemanth Bandlamudi, Founder", 130, 22);
+            doc.text(document.getElementById('fromAddress').value.split('\n'), 130, 30);
+
+            // Invoice Meta
+            doc.setFontSize(10);
+            doc.text(`Invoice Number: ${document.getElementById('invoiceNumber').value}`, 10, 40);
+            doc.text(`Invoice Date: ${document.getElementById('invoiceDate').value}`, 10, 46);
+
+            // Client Info
+            doc.setFontSize(12);
+            doc.text("Bill To:", 10, 60);
+            doc.text(document.getElementById('toAddress').value.split('\n'), 10, 66);
+
+            // Services Table
+            let y = 90;
+            doc.setFontSize(10);
+            doc.text("Description", 10, y);
+            doc.text("Qty", 100, y);
+            doc.text("Price", 130, y);
+            doc.text("Total", 160, y);
+            y += 6;
+
+            document.querySelectorAll('#servicesBody tr').forEach(row => {
+                doc.text(row.querySelector('.service-desc').value, 10, y);
+                doc.text(row.querySelector('.quantity').value, 100, y);
+                doc.text(row.querySelector('.price').value, 130, y);
+                doc.text(row.querySelector('.total').textContent, 160, y);
+                y += 7;
+            });
+
+            // Total
+            doc.setFontSize(12);
+            doc.text(`Grand Total: ${document.getElementById('grandTotal').textContent}`, 130, y + 10);
+
+            // Signature
+            const signature = localStorage.getItem('signature');
+            if(signature) {
+                doc.addImage(signature, 'PNG', 130, y + 20, 40, 20);
+                doc.text("Hemanth Bandlamudi", 130, y + 35);
+                doc.text("Founder, Young Web Solutions", 130, y + 40);
+            }
+
+            doc.save('invoice.pdf');
+        }
+
+        // Initialize
+        document.querySelectorAll('#servicesBody tr').forEach(addInputListeners);
+        document.getElementById('invoiceDate').max = new Date().toISOString().split('T')[0];
+    </script>
 </body>
 </html>
