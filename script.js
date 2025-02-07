@@ -5,6 +5,7 @@ let invoices = JSON.parse(localStorage.getItem('invoices')) || [];
 window.onload = () => {
     updateDashboard();
     addService(); // Add first service row
+    addInputListeners(); // Add real-time calculation listeners
 };
 
 // Add Service Row
@@ -19,7 +20,7 @@ function addService() {
         <td><button class="delete-btn" onclick="deleteService(this)">×</button></td>
     `;
     tbody.appendChild(newRow);
-    addInputListeners(newRow);
+    addInputListeners(); // Reattach listeners
 }
 
 // Delete Service Row
@@ -28,6 +29,14 @@ function deleteService(btn) {
         btn.closest('tr').remove();
         calculateTotal();
     }
+}
+
+// Add Input Listeners for Real-Time Calculations
+function addInputListeners() {
+    document.querySelectorAll('.quantity, .price').forEach(input => {
+        input.removeEventListener('input', calculateTotal); // Remove old listeners
+        input.addEventListener('input', calculateTotal); // Add new listeners
+    });
 }
 
 // Calculate Totals
